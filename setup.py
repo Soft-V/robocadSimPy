@@ -10,7 +10,7 @@ classifiers = [
 
 setup(
     name='robocadSimPy',
-    version='0.0.6.7',
+    version='0.0.6.8',
     description='python lib for robocadSim',
     long_description="Python library for robocadV" + '\n\n' + open('CHANGELOG.txt').read(),
     url='https://robocadv.readthedocs.io/en/latest/docs/all_docs/lib_docs/python/index.html',

@@ -27,3 +27,8 @@ Change Log
 0.0.6.7 (27.04.2022)
 ------------------------------
 - Project is open source now
+
+0.0.6.8 (08.06.2022)
+------------------------------
+- Festo robot changes
+- Socket closes surrounded with try/except

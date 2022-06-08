@@ -21,8 +21,15 @@ class Festo:
 
         self.__reset_imu = False
 
-        self.__right_ir = 0.0
-        self.__left_ir = 0.0
+        self.__ir_1 = 0.0
+        self.__ir_2 = 0.0
+        self.__ir_3 = 0.0
+        self.__ir_4 = 0.0
+        self.__ir_5 = 0.0
+        self.__ir_6 = 0.0
+        self.__ir_7 = 0.0
+        self.__ir_8 = 0.0
+        self.__ir_9 = 0.0
         self.__imu = 0.0
 
         self.__grip_servo_pos = 0.0
@@ -35,12 +42,14 @@ class Festo:
 
     def connect(self):
         self.__motors_channel.start_talking()
+        self.__oms_channel.start_talking()
         self.__resets_channel.start_talking()
         self.__encs_channel.start_listening()
         self.__sensors_channel.start_listening()
 
     def disconnect(self):
         self.__motors_channel.stop_talking()
+        self.__oms_channel.stop_talking()
         self.__resets_channel.stop_talking()
         self.__encs_channel.stop_listening()
         self.__sensors_channel.stop_listening()
@@ -77,10 +86,17 @@ class Festo:
 
     def __update_sensors(self):
         values = connection.ParseChannels.parse_float_channel(self.__sensors_channel.out_string)
-        if len(values) == 9:
-            self.__right_ir = values[2]
-            self.__left_ir = values[3]
-            self.__imu = values[4]
+        if len(values) == 10:
+            self.__ir_1 = values[0] * 10
+            self.__ir_2 = values[1] * 10
+            self.__ir_3 = values[2] * 10
+            self.__ir_4 = values[3] * 10
+            self.__ir_5 = values[4] * 10
+            self.__ir_6 = values[5] * 10
+            self.__ir_7 = values[6] * 10
+            self.__ir_8 = values[7] * 10
+            self.__ir_9 = values[8] * 10
+            self.__imu = values[9]
 
     @property
     def right_motor_speed(self):
@@ -170,14 +186,49 @@ class Festo:
         return self.__back_motor_enc
 
     @property
-    def right_ir(self):
+    def ir_1(self):
         self.__update_sensors()
-        return self.__right_ir
+        return self.__ir_1
 
     @property
-    def left_ir(self):
+    def ir_2(self):
         self.__update_sensors()
-        return self.__left_ir
+        return self.__ir_2
+
+    @property
+    def ir_3(self):
+        self.__update_sensors()
+        return self.__ir_3
+
+    @property
+    def ir_4(self):
+        self.__update_sensors()
+        return self.__ir_4
+
+    @property
+    def ir_5(self):
+        self.__update_sensors()
+        return self.__ir_5
+
+    @property
+    def ir_6(self):
+        self.__update_sensors()
+        return self.__ir_6
+
+    @property
+    def ir_7(self):
+        self.__update_sensors()
+        return self.__ir_7
+
+    @property
+    def ir_8(self):
+        self.__update_sensors()
+        return self.__ir_8
+
+    @property
+    def ir_9(self):
+        self.__update_sensors()
+        return self.__ir_9
 
     @property
     def imu(self):

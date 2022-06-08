@@ -42,6 +42,8 @@ class ListenPort:
                     self.sct.sendall("Wait for data".encode('utf-16-le'))
                     self.out_bytes = self.sct.recv(1024)
                     self.out_string = self.out_bytes.decode('utf-16-le')
+                # задержка для слабых компов
+                time.sleep(0.004)
             except (ConnectionAbortedError, BrokenPipeError):
                 # возникает при отключении сокета
                 break
@@ -58,7 +60,12 @@ class ListenPort:
         self.__stop_thread = True
         self.reset_out()
         if self.sct is not None:
-            self.sct.shutdown(socket.SHUT_RDWR)
+            try:
+                self.sct.shutdown(socket.SHUT_RDWR)
+            except (OSError, Exception):
+                if LOG_LEVEL < LOG_EXC_WARN:
+                    warnings.warn("Something went wrong while shutting down socket on port " + str(self.__port),
+                                  category=ConnectionResetWarning)
             if self.thread is not None:
                 st_time = time.time()
                 # если поток все еще живой, ждем 1 секунды и закрываем сокет
@@ -67,7 +74,13 @@ class ListenPort:
                         if LOG_LEVEL < LOG_EXC_WARN:
                             warnings.warn("Something went wrong. Rude disconnection on port " + str(self.__port),
                                           category=ConnectionResetWarning)
-                        self.sct.close()
+                        try:
+                            self.sct.close()
+                        except (OSError, Exception):
+                            if LOG_LEVEL < LOG_EXC_WARN:
+                                warnings.warn(
+                                    "Something went wrong while closing socket on port " + str(self.__port),
+                                    category=ConnectionResetWarning)
                         st_time = time.time()
 
 
@@ -95,6 +108,8 @@ class TalkPort:
             try:
                 self.sct.sendall((self.out_string + "$").encode('utf-16-le'))
                 _ = self.sct.recv(1024)  # ответ сервера
+                # задержка для слабых компов
+                time.sleep(0.004)
             except (ConnectionAbortedError, BrokenPipeError):
                 # возникает при отключении сокета
                 break
@@ -110,7 +125,12 @@ class TalkPort:
         self.__stop_thread = True
         self.reset_out()
         if self.sct is not None:
-            self.sct.shutdown(socket.SHUT_RDWR)
+            try:
+                self.sct.shutdown(socket.SHUT_RDWR)
+            except (OSError, Exception):
+                if LOG_LEVEL < LOG_EXC_WARN:
+                    warnings.warn("Something went wrong while shutting down socket on port " + str(self.__port),
+                                  category=ConnectionResetWarning)
             if self.thread is not None:
                 st_time = time.time()
                 # если поток все еще живой, ждем 1 секунды и закрываем сокет
@@ -119,7 +139,13 @@ class TalkPort:
                         if LOG_LEVEL < LOG_EXC_WARN:
                             warnings.warn("Something went wrong. Rude disconnection on port " + str(self.__port),
                                           category=ConnectionResetWarning)
-                        self.sct.close()
+                        try:
+                            self.sct.close()
+                        except (OSError, Exception):
+                            if LOG_LEVEL < LOG_EXC_WARN:
+                                warnings.warn(
+                                    "Something went wrong while closing socket on port " + str(self.__port),
+                                    category=ConnectionResetWarning)
                         st_time = time.time()
 
 
