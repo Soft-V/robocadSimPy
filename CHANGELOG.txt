@@ -32,3 +32,7 @@ Change Log
 ------------------------------
 - Festo robot changes
 - Socket closes surrounded with try/except
+
+0.0.6.9 (25.06.2022)
+------------------------------
+- ListenPort changes

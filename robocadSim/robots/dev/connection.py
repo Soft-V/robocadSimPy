@@ -40,7 +40,12 @@ class ListenPort:
                     self.out_bytes = self.sct.recv(buffer_size)
                 else:
                     self.sct.sendall("Wait for data".encode('utf-16-le'))
-                    self.out_bytes = self.sct.recv(1024)
+                    data_size = self.sct.recv(4)
+                    if len(data_size) < 4:
+                        continue
+                    length = (data_size[3] & 0xff) << 24 | (data_size[2] & 0xff) << 16 | \
+                             (data_size[1] & 0xff) << 8 | (data_size[0] & 0xff)
+                    self.out_bytes = self.sct.recv(length)
                     self.out_string = self.out_bytes.decode('utf-16-le')
                 # задержка для слабых компов
                 time.sleep(0.004)
