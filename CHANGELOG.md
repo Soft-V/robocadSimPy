@@ -36,3 +36,9 @@ Change Log
 0.0.6.9 (25.06.2022)
 ------------------------------
 - ListenPort changes
+
+0.0.6.10 (29.06.2022)
+------------------------------
+- ConnectionHelper class added, it is easier now to add new robots
+- Unused files removed (connection_udp.py, festo.py)
+- CHANGELOG file is markdown now

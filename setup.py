@@ -10,9 +10,9 @@ classifiers = [
 
 setup(
     name='robocadSimPy',
-    version='0.0.6.9',
-    description='python lib for robocadSim',
-    long_description="Python library for robocadV" + '\n\n' + open('CHANGELOG.txt').read(),
+    version='0.0.6.10',
+    description='python lib for robocadV',
+    long_description="Python library for robocadV" + '\n\n' + open('CHANGELOG.md').read(),
     url='https://robocadv.readthedocs.io/en/latest/docs/all_docs/lib_docs/python/index.html',
     author='Abdrakov Airat',
     author_email='abdrakovairat@gmail.com',

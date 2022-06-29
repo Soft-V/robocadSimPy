@@ -15,37 +15,37 @@ class ListenPort:
         self.out_string = ''
         self.out_bytes = b''
 
-        self.sct = None
-        self.thread = None
+        self.__sct = None
+        self.__thread = None
 
     def start_listening(self):
-        self.thread = threading.Thread(target=self.listening, args=())
-        self.thread.start()
+        self.__thread = threading.Thread(target=self.listening, args=())
+        self.__thread.start()
 
     def listening(self):
-        self.sct = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-        self.sct.connect(('127.0.0.1', self.__port))
+        self.__sct = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        self.__sct.connect(('127.0.0.1', self.__port))
         if LOG_LEVEL < LOG_EXC_INFO:
             print("connected: " + str(self.__port))
         while not self.__stop_thread:
             try:
                 if self.__is_camera:
-                    self.sct.sendall("Wait for size".encode('utf-16-le'))
-                    image_size = self.sct.recv(4)
+                    self.__sct.sendall("Wait for size".encode('utf-16-le'))
+                    image_size = self.__sct.recv(4)
                     if len(image_size) < 4:
                         continue
                     buffer_size = (image_size[3] & 0xff) << 24 | (image_size[2] & 0xff) << 16 | \
                                   (image_size[1] & 0xff) << 8 | (image_size[0] & 0xff)
-                    self.sct.sendall("Wait for image".encode('utf-16-le'))
-                    self.out_bytes = self.sct.recv(buffer_size)
+                    self.__sct.sendall("Wait for image".encode('utf-16-le'))
+                    self.out_bytes = self.__sct.recv(buffer_size)
                 else:
-                    self.sct.sendall("Wait for data".encode('utf-16-le'))
-                    data_size = self.sct.recv(4)
+                    self.__sct.sendall("Wait for data".encode('utf-16-le'))
+                    data_size = self.__sct.recv(4)
                     if len(data_size) < 4:
                         continue
                     length = (data_size[3] & 0xff) << 24 | (data_size[2] & 0xff) << 16 | \
                              (data_size[1] & 0xff) << 8 | (data_size[0] & 0xff)
-                    self.out_bytes = self.sct.recv(length)
+                    self.out_bytes = self.__sct.recv(length)
                     self.out_string = self.out_bytes.decode('utf-16-le')
                 # задержка для слабых компов
                 time.sleep(0.004)
@@ -54,8 +54,8 @@ class ListenPort:
                 break
         if LOG_LEVEL < LOG_EXC_INFO:
             print("disconnected: " + str(self.__port))
-        self.sct.shutdown(socket.SHUT_RDWR)
-        self.sct.close()
+        self.__sct.shutdown(socket.SHUT_RDWR)
+        self.__sct.close()
 
     def reset_out(self):
         self.out_string = ''
@@ -64,23 +64,23 @@ class ListenPort:
     def stop_listening(self):
         self.__stop_thread = True
         self.reset_out()
-        if self.sct is not None:
+        if self.__sct is not None:
             try:
-                self.sct.shutdown(socket.SHUT_RDWR)
+                self.__sct.shutdown(socket.SHUT_RDWR)
             except (OSError, Exception):
                 if LOG_LEVEL < LOG_EXC_WARN:
                     warnings.warn("Something went wrong while shutting down socket on port " + str(self.__port),
                                   category=ConnectionResetWarning)
-            if self.thread is not None:
+            if self.__thread is not None:
                 st_time = time.time()
                 # если поток все еще живой, ждем 1 секунды и закрываем сокет
-                while self.thread.is_alive():
+                while self.__thread.is_alive():
                     if time.time() - st_time > 1:
                         if LOG_LEVEL < LOG_EXC_WARN:
                             warnings.warn("Something went wrong. Rude disconnection on port " + str(self.__port),
                                           category=ConnectionResetWarning)
                         try:
-                            self.sct.close()
+                            self.__sct.close()
                         except (OSError, Exception):
                             if LOG_LEVEL < LOG_EXC_WARN:
                                 warnings.warn(
@@ -97,22 +97,22 @@ class TalkPort:
         self.__stop_thread = False
         self.out_string = ''
 
-        self.sct = None
-        self.thread = None
+        self.__sct = None
+        self.__thread = None
 
     def start_talking(self):
-        self.thread = threading.Thread(target=self.talking, args=())
-        self.thread.start()
+        self.__thread = threading.Thread(target=self.talking, args=())
+        self.__thread.start()
 
     def talking(self):
-        self.sct = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-        self.sct.connect(('127.0.0.1', self.__port))
+        self.__sct = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        self.__sct.connect(('127.0.0.1', self.__port))
         if LOG_LEVEL < LOG_EXC_INFO:
             print("connected: " + str(self.__port))
         while not self.__stop_thread:
             try:
-                self.sct.sendall((self.out_string + "$").encode('utf-16-le'))
-                _ = self.sct.recv(1024)  # ответ сервера
+                self.__sct.sendall((self.out_string + "$").encode('utf-16-le'))
+                _ = self.__sct.recv(1024)  # ответ сервера
                 # задержка для слабых компов
                 time.sleep(0.004)
             except (ConnectionAbortedError, BrokenPipeError):
@@ -120,8 +120,8 @@ class TalkPort:
                 break
         if LOG_LEVEL < LOG_EXC_INFO:
             print("disconnected: " + str(self.__port))
-        self.sct.shutdown(socket.SHUT_RDWR)
-        self.sct.close()
+        self.__sct.shutdown(socket.SHUT_RDWR)
+        self.__sct.close()
 
     def reset_out(self):
         self.out_string = ''
@@ -129,23 +129,23 @@ class TalkPort:
     def stop_talking(self):
         self.__stop_thread = True
         self.reset_out()
-        if self.sct is not None:
+        if self.__sct is not None:
             try:
-                self.sct.shutdown(socket.SHUT_RDWR)
+                self.__sct.shutdown(socket.SHUT_RDWR)
             except (OSError, Exception):
                 if LOG_LEVEL < LOG_EXC_WARN:
                     warnings.warn("Something went wrong while shutting down socket on port " + str(self.__port),
                                   category=ConnectionResetWarning)
-            if self.thread is not None:
+            if self.__thread is not None:
                 st_time = time.time()
                 # если поток все еще живой, ждем 1 секунды и закрываем сокет
-                while self.thread.is_alive():
+                while self.__thread.is_alive():
                     if time.time() - st_time > 1:
                         if LOG_LEVEL < LOG_EXC_WARN:
                             warnings.warn("Something went wrong. Rude disconnection on port " + str(self.__port),
                                           category=ConnectionResetWarning)
                         try:
-                            self.sct.close()
+                            self.__sct.close()
                         except (OSError, Exception):
                             if LOG_LEVEL < LOG_EXC_WARN:
                                 warnings.warn(

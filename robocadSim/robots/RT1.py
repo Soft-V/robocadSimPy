@@ -1,5 +1,6 @@
-from .dev import connection
+from .dev import connection_helper
 from . import line_sensor_cls
+from .dev.holder import *
 
 
 class RT1:
@@ -37,38 +38,24 @@ class RT1:
         self.__imu = 0.0
         self.__line_sensor = line_sensor_cls.LineSensor()
 
-        self.__other_channel = connection.TalkPort(65431)
-        self.__motors_channel = connection.TalkPort(65432)
-        self.__resets_channel = connection.TalkPort(65434)
-        self.__encs_channel = connection.ListenPort(65435)
-        self.__sensors_channel = connection.ListenPort(65436)
-        self.__buttons_channel = connection.ListenPort(65437)
+        self.__connection_helper = connection_helper.ConnectionHelper(CONN_OTHER | CONN_MOTORS_AND_ENCS |
+                                                                      CONN_RESETS | CONN_SENS | CONN_BUTTONS)
 
     def connect(self):
-        self.__other_channel.start_talking()
-        self.__motors_channel.start_talking()
-        self.__resets_channel.start_talking()
-        self.__encs_channel.start_listening()
-        self.__sensors_channel.start_listening()
-        self.__buttons_channel.start_listening()
+        self.__connection_helper.start_channels()
 
     def disconnect(self):
-        self.__other_channel.stop_talking()
-        self.__motors_channel.stop_talking()
-        self.__resets_channel.stop_talking()
-        self.__encs_channel.stop_listening()
-        self.__sensors_channel.stop_listening()
-        self.__buttons_channel.stop_listening()
+        self.__connection_helper.stop_channels()
 
     def __update_other(self):
-        self.__other_channel.out_string = connection.ParseChannels.join_bool_channel(
+        self.__connection_helper.set_other(
                 (
-                    self.__led_green,
-                    self.__led_red,
+                    int(self.__led_green),
+                    int(self.__led_red),
                 ))
 
     def __update_motors(self):
-        self.__motors_channel.out_string = connection.ParseChannels.join_float_channel(
+        self.__connection_helper.set_motors(
             (
                 self.__right_motor_speed,
                 self.__left_motor_speed,
@@ -76,7 +63,7 @@ class RT1:
             ))
 
     def __update_resets(self):
-        self.__resets_channel.out_string = connection.ParseChannels.join_bool_channel(
+        self.__connection_helper.set_resets(
             (
                 self.__reset_right_enc,
                 self.__reset_left_enc,
@@ -85,14 +72,14 @@ class RT1:
             ))
 
     def __update_encs(self):
-        values = connection.ParseChannels.parse_float_channel(self.__encs_channel.out_string)
+        values = self.__connection_helper.get_encs()
         if len(values) == 3:
             self.__right_motor_enc = values[0]
             self.__left_motor_enc = values[1]
             self.__back_motor_enc = values[2]
 
     def __update_sensors(self):
-        values = connection.ParseChannels.parse_float_channel(self.__sensors_channel.out_string)
+        values = self.__connection_helper.get_sens()
         if len(values) == 9:
             self.__right_us = values[0]
             self.__left_us = values[1]
@@ -105,7 +92,7 @@ class RT1:
             self.__line_sensor.s4 = values[8]
 
     def __update_buttons(self):
-        values = connection.ParseChannels.parse_bool_channel(self.__buttons_channel.out_string)
+        values = self.__connection_helper.get_buttons()
         if len(values) == 4:
             self.__button_ems = values[0]
             self.__button_start = values[1]
